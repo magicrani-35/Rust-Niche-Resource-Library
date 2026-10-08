@@ -1,0 +1,11 @@
+[package]
+name = "yew-NicheResourceLibraries"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+gloo-net = { version = "0.7.0", features = ["json"] }
+serde = { version = "1.0.229", features = ["derive"] }
+wasm-bindgen-futures = "0.4.79"
+yew = { version = "0.23.0", features = ["csr"] }
+yew-router = "0.20.0"
