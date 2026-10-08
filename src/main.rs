@@ -1,56 +1,74 @@
-use gloo_net::http::Request;
-use serde::Deserialize;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-#[derive(Deserialize, Clone, PartialEq)]
-struct Post {
-    id: u32,
-    title: String,
+#[derive(Clone, Routable, PartialEq)]
+enum Route {
+    #[at("/")]
+    Home,
+    #[at("/about")]
+    About,
+    #[not_found]
+    #[at("/404")]
+    NotFound,
 }
 
-#[derive(Clone, Routable)]
+fn switch(route: Route) -> Html {
+    match route {
+        Route::Home => html! {
+            <section>
+                <h1>{ "Explore the museum" }</h1>
+                <p>{ "Discover artwork and collect your favorites." }</p>
+            </section>
+        },
+        Route::About => html! {
+            <section>
+                <h1>
+                    { "About this museum" }
+                </h1>
+                <p>
+                    { "A small art discovery app built with Rust and Yew." }
+                </p>
+            </section>
+        },
+        Route::NotFound => html! {
+            <section>
+                <h1>{ "Page not found" }</h1>
+                <Link<Route> to={Route::Home}>
+                    { "Return to the gallery" }
+                </Link<Route>>
+            </section>
+        },
+    }
+}
 
 #[component]
-fn PostList() -> Html {
-    let posts = use_state(|| None::<Result<Vec<Post>, String>>);
+fn App() -> Html {
+      html! {
+          <BrowserRouter>
+            <header>
+                <p>
+                    { "The Little Museum" }
+                </p>
+                <nav>
+                    <Link<Route> to={Route::Home}>
+                        { "Gallery" }
+                    </Link<Route>>
 
-    {
-        let posts = posts.clone();
-        use_effect_with((), move |_| {
-            wasm_bindgen_futures::spawn_local(async move {
-                let result = Request::get("https://jsonplaceholder.typicode.com/posts")
-                    .send()
-                    .await
-                    .map_err(|e| e.to_string());
+                    { " | " }
 
-                let parsed = match result {
-                    Ok(response) => response
-                        .json::<Vec<Post>>()
-                        .await
-                        .map_err(|e| e.to_string()),
-                    Err(e) => Err(e),
-                };
+                    <Link<Route> to={Route::About}>
+                        { "About" }
+                    </Link<Route>>
+                </nav>
+            </header>
 
-                posts.set(Some(parsed));
-            });
-            || ()
-        });
-    }
-
-    match &*posts {
-        None => html! { <p>{ "Loading..." }</p> },
-        Some(Ok(list)) => html! {
-            <ul>
-                { for list.iter().map(|p| html! { <li key={p.id}>{ &p.title }</li> }) }
-            </ul>
-        },
-        Some(Err(err)) => html! { <p>{ format!("failed to load posts: {err}") }</p> },
-    }
+            <main>
+                <Switch<Route> render={switch} />
+            </main>
+          </BrowserRouter>
+      }
 }
 
-
-
 fn main() {
-    yew::Renderer::<PostList>::new().render();
+    yew::Renderer::<App>::new().render();
 }
