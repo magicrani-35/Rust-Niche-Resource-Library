@@ -1,0 +1,25 @@
+version: 2.1
+
+jobs:
+  build-yew:
+    docker:
+      - image: cimg/rust:1.85.0
+    steps:
+      - checkout
+
+
+      - run:
+          name: Set up current stable Rust
+          command: |
+            rustup update stable
+            rustup default stable
+            rustup target add wasm32-unknown-unknown
+
+      - run:
+          name: Build the Yew app
+          command: cargo build --locked --target wasm32-unknown-unknown
+
+workflows:
+  build:
+    jobs:
+      - build-yew
