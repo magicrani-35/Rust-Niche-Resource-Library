@@ -969,7 +969,9 @@ version = "0.1.0"
 dependencies = [
  "gloo-net 0.7.0",
  "serde",
+ "urlencoding",
  "wasm-bindgen-futures",
+ "web-sys",
  "yew",
  "yew-router",
 ]

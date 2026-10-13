@@ -75,7 +75,7 @@ main {
 }
 
 .gallery {
-    display: grid,
+    display: grid;
     grid-template-columns: repeat(
         auto-fit,
         minmax(min(100%, 16rem), 1fr)
@@ -177,4 +177,299 @@ main {
 
 .artwork-info {
     padding: var(--space-3);
+}
+
+.artwork-image-link {
+    display: block;
+}
+
+.artwork-image-link:hover .artwork-image {
+    background: #e5e1f0;
+}
+
+.artwork-image-link:focus-visible {
+    outline-offset: -4px;
+}
+
+.viewer-heading {
+    margin-top: var(--space-2);
+    margin-bottom: var(--space-2);
+}
+
+.viewer-stage {
+    margin-top: var(--space-3);
+    max-height: 75vh;
+    overflow: auto;
+    background: #eeece8;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+}
+
+.viewer-stage:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 4px;
+}
+
+.viewer-image {
+    display: block;
+    max-width: none;
+    height: auto;
+}
+
+.view-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+}
+
+.viewer-controls button {
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.viewer-controls button:hover:not(:disabled) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.viewer-controls button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.viewer-controls output {
+    min-width: 4ch;
+    text-align: center;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.search-form {
+    margin-top: var(--space-4);
+}
+
+.search-form label {
+    display: block;
+    margin-bottom: var(--space-3);
+    font-weight: 700;
+}
+
+.search-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.search-fields input {
+    flex: 1 1 16rem;
+    min-width: 0;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+}
+
+.search-fields button {
+    padding: 0.85rem 1.5rem;
+    border: 0;
+    border-radius: 0.75rem;
+    background: var(--color-primary);
+    color: white;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.search-fields button:hover {
+    background: var(--color-primary-hover);
+}
+
+.search-summary {
+    margin-top: var(--space-2);
+    color: var(--color-muted);
+}
+
+.artwork-info, .artwork-origin, .artwork-origin {
+    margin-top: var(--space-1);
+    color: var(--color-teal);
+}
+
+.origin-browser {
+    margin-top: var(--space-4);
+}
+
+.origin-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+}
+
+.origin-links a {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.origin-links a:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.origins-more {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-primary);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.origins-more:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.origins-dialog {
+    width: min(32rem, calc(100% - 2rem));
+    max-height: 80vh;
+    padding: var(--space-3);
+    overflow: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+.origins-dialog::backdrop {
+    background: rgb(25 35 56 / 60%);
+}
+
+.origins-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.dialog-close {
+    padding: 0.5rem 0.85rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-background);
+    color: var(--color-text);
+    font: inherit;
+    cursor: pointer;
+}
+
+.origins-dialog-description {
+    margin-top: var(--space-2);
+    color: var(--color-muted);
+}
+
+.origins-list {
+    display: grid;
+    gap: var(--space-1);
+    margin: var(--space-3) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.origins-list a {
+    display: block;
+    padding: var(--space-2);
+    border-radius: 0.75rem;
+    background: var(--color-background);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.origins-list a:hover {
+    background: var(--color-primary);
+    color: white;
+}
+
+.origin-results-description {
+    margin-bottom: var(--space-3);
+    color: var(--color-muted);
+}
+
+.origin-results {
+    display: grid;
+    gap: var(--space-3);
+}
+
+.artwork-row {
+    display: grid;
+    grid-template-columns: minmax(0, 16rem) minmax(0, 1fr);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+}
+
+.artwork-row-image-link {
+    display: block;
+    background: #eeece8;
+}
+
+.artwork-row-image {
+    display: block;
+    width: 100%;
+    height: 15rem;
+    padding: var(--space-2);
+    object-fit: contain;
+}
+
+.artwork-row-placeholder {
+    display: grid;
+    place-items: center;
+    min-height: 15rem;
+    padding: var(--space-2);
+    background: #eeece8;
+    color: var(--color-muted);
+}
+
+.artwork-row-info {
+    align-self: center;
+    padding: var(--space-3);
+    overflow-wrap: anywhere;
+}
+
+.artwork-row-info p {
+    margin-top: var(--space-1);
+}
+
+.artwork-row-info h2 a {
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.artwork-row-info h2 a:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
+@media (max-width: 40rem) {
+    .artwork-row {
+        grid-template-columns: 1fr;
+    }
 }
