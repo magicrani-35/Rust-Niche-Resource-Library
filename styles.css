@@ -29,7 +29,7 @@
 }
 
 body {
-     \margin: 0;
+    margin: 0;
     background: var(--color-background);
     color: var(--color-text);
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -472,4 +472,20 @@ main {
     .artwork-row {
         grid-template-columns: 1fr;
     }
+}
+
+.artwork-image-fallback {
+    max-width: 26ch;
+    text-align: center;
+}
+
+.artwork-image-fallback p {
+    margin-bottom: var(--space-2);
+    color: var(--color-muted);
+}
+
+.artwork-image-fallback a {
+    display: inline-block;
+    color: var(--color-primary);
+    font-weight: 700;
 }

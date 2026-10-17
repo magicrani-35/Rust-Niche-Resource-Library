@@ -11,8 +11,23 @@ pub(crate) struct ArtworkCardProps {
 
 #[component]
 pub(crate) fn ArtworkCard(props: &ArtworkCardProps) -> Html {
+    let image_failed = use_state(|| false);
+
+    let on_image_error = {
+        let image_failed = image_failed.clone();
+
+        Callback::from(move |_: Event| {
+            image_failed.set(true);
+        })
+    };
+
+    let museum_url = format!(
+        "https://www.artic.edu/artworks/{}",
+        props.artwork.id
+    );
+
     let image = match &props.artwork.image_id {
-        Some(image_id) => {
+        Some(image_id) if !*image_failed => {
             let image_url =
                 format!("https://www.artic.edu/iiif/2/{image_id}/full/843,/0/default.jpg");
 
@@ -29,11 +44,33 @@ pub(crate) fn ArtworkCard(props: &ArtworkCardProps) -> Html {
                         alt={format!("View {}", props.artwork.title)}
                         loading="lazy"
                         referrerpolicy="no-referrer"
+                        onerror={on_image_error}
                     />
                 </Link<Route>>
             }
-        }
-        None => html! { <div class="artwork-image-placeholder">{ "Image unavailable" }</div> },
+        },
+        _ => {
+            let message = if *image_failed {
+                "Image couldn't load"
+            } else {
+                "Image unavailable"
+            };
+
+            html! {
+                <div class="artwork-image-placeholder">
+                    <div class="artwork-image-fallback">
+                        <p>{ message }</p>
+                        <a
+                            href={museum_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            { "View artwork at the museum ↗" }
+                        </a>
+                    </div>
+                </div>
+            }
+        },
     };
 
     html! {
