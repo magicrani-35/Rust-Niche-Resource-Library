@@ -5,7 +5,7 @@ use wasm_bindgen_futures::spawn_local;
 use crate::api::fetch_origin_artworks;
 use crate::components::ArtworkRow;
 use crate::models::ApiArtwork;
-use crate::route::Route;
+use crate::routes::Route;
 
 #[derive(Properties, PartialEq)]
 pub(crate) struct OriginResultsProps {
