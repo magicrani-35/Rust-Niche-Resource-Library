@@ -5,6 +5,8 @@ use crate::models::{
     Artwork,
     ArtworkDetailResponse,
     ArtworkResponse,
+    ArtworkPage,
+    PaginatedArtworkResponse,
 };
 
 pub(crate) async fn fetch_artworks(query: &str) -> Result<Vec<Artwork>, String> {
@@ -82,11 +84,12 @@ pub(crate) async fn fetch_artwork(id: u32) -> Result<ApiArtwork, String> {
 
 pub(crate) async fn fetch_origin_artworks(
     origin: &str,
-) -> Result<Vec<ApiArtwork>, String> {
+    page: u32,
+) -> Result<ArtworkPage, String> {
     let fields = "id,title,artist_display,date_display,image_id,place_of_origin";
     let encoded_origin = urlencoding::encode(origin);
     let url = format!(
-        "https://api.artic.edu/api/v1/artworks/search?limit=12&fields={fields}&query%5Bmatch_phrase%5D%5Bplace_of_origin%5D={encoded_origin}"
+        "https://api.artic.edu/api/v1/artworks/search?page={page}&limit=12&fields={fields}&query%5Bmatch_phrase%5D%5Bplace_of_origin%5D={encoded_origin}"
     );
 
     let response = Request::get(&url)
@@ -102,9 +105,12 @@ pub(crate) async fn fetch_origin_artworks(
     }
 
     let body = response
-        .json::<ArtworkResponse>()
+        .json::<PaginatedArtworkResponse>()
         .await
         .map_err(|error| error.to_string())?;
 
-    Ok(body.data)
+    Ok(ArtworkPage {
+        artworks: body.data,
+        pagination: body.pagination,
+    })
 }

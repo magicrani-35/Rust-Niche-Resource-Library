@@ -485,3 +485,34 @@ main {
     height: 15rem;
     min-height: 15rem;
 }
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+}
+
+.pagination button {
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-surface);
+    color: var(--color-primary);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.pagination button:hover:not(:disabled) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.pagination button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}

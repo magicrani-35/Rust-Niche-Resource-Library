@@ -29,3 +29,23 @@ pub(crate) struct ArtworkResponse {
 pub(crate) struct ArtworkDetailResponse {
     pub(crate) data: ApiArtwork,
 }
+
+#[derive(Deserialize, Clone, PartialEq)]
+pub(crate) struct Pagination {
+    pub(crate) total: u32,
+    pub(crate) current_page: u32,
+    pub(crate) total_pages: u32,
+    pub(crate) limit: u32,
+}
+
+#[derive(Deserialize)]
+pub(crate) struct PaginatedArtworkResponse {
+    pub(crate) data: Vec<ApiArtwork>,
+    pub(crate) pagination: Pagination,
+}
+
+#[derive(Clone, PartialEq)]
+pub(crate) struct ArtworkPage {
+    pub(crate) artworks: Vec<ApiArtwork>,
+    pub(crate) pagination: Pagination,
+}
