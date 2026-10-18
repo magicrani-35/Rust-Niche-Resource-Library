@@ -33,7 +33,8 @@ pub(crate) fn ArtworkImage(props: &ArtworkImageProps) -> Html {
 
     match &props.image_id {
         Some(image_id) if !*image_failed => {
-            let image_url = format!(
+            let image_url = //String::from("/missing-artwork-test.jpg"
+                format!(
                 "https://www.artic.edu/iiif/2/{image_id}/full/843,/0/default.jpg"
             );
 

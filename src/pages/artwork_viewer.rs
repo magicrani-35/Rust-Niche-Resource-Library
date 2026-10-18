@@ -5,6 +5,7 @@ use wasm_bindgen_futures::spawn_local;
 use crate::api::fetch_artwork;
 use crate::models::ApiArtwork;
 use crate::routes::Route;
+use crate::components::ArtworkImage;
 
 #[derive(Properties, PartialEq)]
 pub(crate) struct ArtworkViewerProps {
@@ -66,8 +67,6 @@ pub(crate) fn ArtworkViewer(props: &ArtworkViewerProps) -> Html {
             let image = match &item.image_id {
                 None => html! { <p>{ "An image is unavailable for this artwork" }</p> },
                 Some(image_id) => {
-                    let image_url =
-                        format!("https://www.artic.edu/iiif/2/{image_id}/full/843,/0/default.jpg");
 
                     html! {
                         <>
@@ -99,12 +98,14 @@ pub(crate) fn ArtworkViewer(props: &ArtworkViewerProps) -> Html {
                                 role="region"
                                 aria-label="Scrollable artwork image"
                             >
-                                <img
-                                    class="viewer-image"
-                                    src={image_url}
-                                    alt={item.title.clone()}
-                                    referrerpolicy="no-referrer"
-                                    style={format!("width: {}%", *zoom * 100.0)}
+                                <ArtworkImage
+                                    key={image_id.clone()}
+                                    artwork_id={item.id}
+                                    image_id={Some(image_id.clone())}
+                                    title={item.title.clone()}
+                                    classes={classes!("viewer-image")}
+                                    style={format!("Width: {}%;", *zoom * 100.0)}
+                                    link_to_viewer={false}
                                 />
                             </div>
                         </>
