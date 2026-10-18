@@ -3,6 +3,7 @@ use yew_router::prelude::Link;
 
 use crate::models::ApiArtwork;
 use crate::routes::Route;
+use crate::components::ArtworkImage;
 
 #[derive(Properties, PartialEq)]
 pub(crate) struct ArtworkRowProps {
@@ -13,37 +14,17 @@ pub(crate) struct ArtworkRowProps {
 pub(crate) fn ArtworkRow(props: &ArtworkRowProps) -> Html {
     let item = &props.artwork;
 
-    let image = match &item.image_id {
-        Some(image_id) => {
-            let image_url = format!(
-                "https://www.artic.edu/iiif/2/{image_id}/full/843,/0/default.jpg"
-            );
-
-            html! {
-                <Link<Route>
-                    to={Route::Artwork { id: item.id }}
-                    classes="artwork-row-image-link"
-                >
-                    <img
-                        class="artwork-row-image"
-                        src={image_url}
-                        alt={format!("View {}", item.title)}
-                        loading="lazy"
-                        referrerpolicy="no-referrer"
-                    />
-                </Link<Route>>
-            }
-        },
-        None => html! {
-            <div class="artwork-row-placeholder">
-                { "Image unavailable" }
-            </div>
-        },
-    };
-
     html! {
         <article class="artwork-row">
-            { image }
+            <div class="artwork-row-media">
+                <ArtworkImage
+                    key={item.image_id.clone().unwrap_or_default()}
+                    artwork_id={item.id}
+                    image_id={item.image_id.clone()}
+                    title={item.title.clone()}
+                    classes={classes!("artwork-row-image")}
+                />
+            </div>
 
             <div class="artwork-row-info">
                 <h2>
