@@ -1,26 +1,22 @@
 use gloo_net::http::Request;
 
-use crate::models::{
-    ApiArtwork,
-    Artwork,
-    ArtworkDetailResponse,
-    ArtworkResponse,
-    ArtworkPage,
-    PaginatedArtworkResponse,
-};
+use crate::models::{ApiArtwork, Artwork, ArtworkDetailResponse, ArtworkPage, PaginatedArtworkResponse, GalleryPage};
 
-pub(crate) async fn fetch_artworks(query: &str) -> Result<Vec<Artwork>, String> {
+pub(crate) async fn fetch_artworks(
+    query: &str,
+    page: u32,
+) -> Result<GalleryPage, String> {
     let fields = "id,title,artist_display,date_display,image_id,place_of_origin";
 
     let url = if query.is_empty() {
         format!(
-            "https://api.artic.edu/api/v1/artworks?limit=6&fields={fields}"
+            "https://api.artic.edu/api/v1/artworks?page={page}&limit=12&fields={fields}"
         )
     } else {
         let encoded_query = urlencoding::encode(query);
 
         format!(
-            "https://api.artic.edu/api/v1/artworks/search?q={encoded_query}&limit=12&fields={fields}"
+            "https://api.artic.edu/api/v1/artworks/search?q={encoded_query}&page={page}&limit=12&fields={fields}"
         )
     };
 
@@ -34,7 +30,7 @@ pub(crate) async fn fetch_artworks(query: &str) -> Result<Vec<Artwork>, String> 
     }
 
     let body = response
-        .json::<ArtworkResponse>()
+        .json::<PaginatedArtworkResponse>()
         .await
         .map_err(|error| error.to_string())?;
 
@@ -57,7 +53,10 @@ pub(crate) async fn fetch_artworks(query: &str) -> Result<Vec<Artwork>, String> 
         })
         .collect();
 
-    Ok(artworks)
+    Ok(GalleryPage {
+        artworks,
+        pagination: body.pagination,
+    })
 }
 
 pub(crate) async fn fetch_artwork(id: u32) -> Result<ApiArtwork, String> {

@@ -4,16 +4,18 @@ use web_sys::{HtmlDialogElement, HtmlInputElement};
 use wasm_bindgen_futures::spawn_local;
 
 use crate::api::fetch_artworks;
-use crate::components::ArtworkCard;
-use crate::models::Artwork;
+use crate::components::{ArtworkCard, PaginationControls};
+use crate::models::GalleryPage;
 use crate::routes::Route;
 
 #[component]
 pub(crate) fn Gallery() -> Html {
-    let artworks = use_state(|| None::<Result<Vec<Artwork>, String>>);
+    let artworks = use_state(|| None::<Result<GalleryPage, String>>);
 
     let search_text = use_state(String::new);
     let submitted_search = use_state(String::new);
+
+    let page = use_state(|| 1_u32);
 
     let on_search_input = {
         let search_text = search_text.clone();
@@ -27,10 +29,12 @@ pub(crate) fn Gallery() -> Html {
     let on_search_submit = {
         let search_text = search_text.clone();
         let submitted_search = submitted_search.clone();
+        let page = page.clone();
 
         Callback::from(move |event: SubmitEvent| {
             event.prevent_default();
 
+            page.set(1);
             submitted_search.set(search_text.trim().to_owned());
         })
     };
@@ -51,18 +55,22 @@ pub(crate) fn Gallery() -> Html {
     {
         let artworks = artworks.clone();
 
-        use_effect_with((*submitted_search).clone(), move |query| {
-            let query = query.clone();
+        use_effect_with(
+            ((*submitted_search).clone(), *page),
+            move |(query, page_number)| {
+                let query = query.clone();
+                let page_number = *page_number;
 
-            artworks.set(None);
+                artworks.set(None);
 
-            spawn_local(async move {
-                let result = fetch_artworks(&query).await;
-                artworks.set(Some(result));
-            });
+                spawn_local(async move {
+                    let result = fetch_artworks(&query, page_number).await;
+                    artworks.set(Some(result));
+                });
 
-            || ()
-        });
+                || ()
+            }
+        );
     }
 
     html! {
@@ -187,18 +195,6 @@ pub(crate) fn Gallery() -> Html {
                 </p>
             }
 
-            if let Some(Ok(items)) = &*artworks {
-                <p role="status">
-                    {
-                        format!(
-                            "Received {} artwork records for '{}'.",
-                            items.len(),
-                            &*submitted_search
-                        )
-                    }
-                </p>
-            }
-
             { match &*artworks {
                 None => html! {
                     <p role="status">{ "Loading artwork..." }</p>
@@ -208,23 +204,69 @@ pub(crate) fn Gallery() -> Html {
                         { format!("Could not load artwork: {error}") }
                     </p>
                 },
-                Some(Ok(items)) if items.is_empty() => html! {
+                Some(Ok(result)) if result.artworks.is_empty() => html! {
                     <p>
                         { "No artworks were found." }
                     </p>
                 },
-                Some(Ok(items)) => html! {
-                    <div class="gallery">
-                        {
-                            for items.iter().map(|artwork| {
-                            html! {
-                                <ArtworkCard key={artwork.id.to_string()} artwork={artwork.clone()} />
-                            }
+                Some(Ok(result)) => {
+                    let current_page = result.pagination.current_page;
+                    let page_limit = result.pagination.limit.max(1);
+
+                    let last_page = if submitted_search.is_empty() {
+                        result.pagination.total_pages
+                    } else {
+                        result
+                            .pagination
+                            .total_pages
+                            .min(10_000 / page_limit)
+                    };
+
+                    let on_page_change = {
+                        let page = page.clone();
+
+                        Callback::from(move |selected_page: u32| {
+                            page.set(selected_page);
                         })
-                        }
-                    </div>
+                    };
+
+                    html! {
+                        <>
+                            <p class="search-summary" role="status">
+                                {
+                                    format!(
+                                        "Page {} of {} browsable pages · {} matching artworks",
+                                        current_page,
+                                        last_page,
+                                        result.pagination.total
+                                    )
+                                }
+                            </p>
+
+                            <div class="gallery">
+                                {
+                                    for result.artworks.iter().map(|artwork| {
+                                        html! {
+                                            <ArtworkCard
+                                                key={artwork.id.to_string()}
+                                                artwork={artwork.clone()}
+                                            />
+                                        }
+                                    })
+                                }
+                            </div>
+
+                            if last_page > 1 {
+                                <PaginationControls
+                                    current_page={current_page}
+                                    last_page={last_page}
+                                    on_page_change={on_page_change}
+                                />
+                            }
+                        </>
+                    }
                 },
-            } }
+              }}
         </section>
     }
 }

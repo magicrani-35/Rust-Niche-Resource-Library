@@ -49,3 +49,9 @@ pub(crate) struct ArtworkPage {
     pub(crate) artworks: Vec<ApiArtwork>,
     pub(crate) pagination: Pagination,
 }
+
+#[derive(Clone, PartialEq)]
+pub(crate) struct GalleryPage {
+    pub(crate) artworks: Vec<Artwork>,
+    pub(crate) pagination: Pagination,
+}
