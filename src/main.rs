@@ -4,6 +4,7 @@ mod models;
 mod routes;
 mod components;
 mod pages;
+mod favorites;
 
 use crate::app::App;
 

@@ -6,6 +6,7 @@ use crate::api::fetch_artwork;
 use crate::models::ApiArtwork;
 use crate::routes::Route;
 use crate::components::ArtworkImage;
+use crate::favorites::{load_favorites, set_favorite};
 
 #[derive(Properties, PartialEq)]
 pub(crate) struct ArtworkViewerProps {
@@ -16,6 +17,28 @@ pub(crate) struct ArtworkViewerProps {
 pub(crate) fn ArtworkViewer(props: &ArtworkViewerProps) -> Html {
     let artwork = use_state(|| None::<Result<ApiArtwork, String>>);
     let zoom = use_state(|| 1.0_f64);
+
+    let is_favorite = use_state(|| false);
+    let favorite_error = use_state(|| None::<String>);
+
+    {
+        let is_favorite = is_favorite.clone();
+        let favorite_error = favorite_error.clone();
+
+        use_effect_with(props.id, move |id| {
+            match load_favorites() {
+                Ok(ids) => {
+                    is_favorite.set(ids.contains(id));
+                    favorite_error.set(None);
+                },
+                Err(error) => {
+                    favorite_error.set(Some(error));
+                },
+            }
+
+            || ()
+        });
+    }
 
     {
         let artwork = artwork.clone();
@@ -53,6 +76,26 @@ pub(crate) fn ArtworkViewer(props: &ArtworkViewerProps) -> Html {
 
         Callback::from(move |_| {
             zoom.set(1.0);
+        })
+    };
+
+    let toggle_favorite = {
+        let is_favorite = is_favorite.clone();
+        let favorite_error = favorite_error.clone();
+        let artwork_id = props.id;
+
+        Callback::from(move |_| {
+            let should_save = !*is_favorite;
+
+            match set_favorite(artwork_id, should_save) {
+                Ok(()) => {
+                    is_favorite.set(should_save);
+                    favorite_error.set(None);
+                },
+                Err(error) => {
+                    favorite_error.set(Some(error));
+                },
+            }
         })
     };
 
@@ -116,6 +159,24 @@ pub(crate) fn ArtworkViewer(props: &ArtworkViewerProps) -> Html {
             html! {
                 <>
                     <h1 class="viewer-heading">{ &item.title }</h1>
+                    <button
+                        type="button"
+                        class="favorite-button"
+                        onclick={toggle_favorite}
+                        aria-pressed={(*is_favorite).to_string()}
+                    >
+                        {
+                            if *is_favorite {
+                                "♥ Remove from favorites"
+                            } else {
+                                "♡ Save to favorites"
+                            }
+                        }
+                    </button>
+                    if let Some(error) = &*favorite_error {
+                        <p role="alert">{ error }</p>
+                    }
+
                     <p>
                         { item.artist_display
                                 .as_deref()
