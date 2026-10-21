@@ -516,3 +516,50 @@ main {
     opacity: 0.45;
     cursor: default;
 }
+
+.origin_filter {
+    margin-top: var(--space-3);
+}
+
+.origin-filter label {
+    display: block;
+    margin-bottom: var(--space-1);
+    font-weight: 700;
+}
+
+.origin-filter input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: var(--color-background);
+    color: var(--color-text);
+    font: inherit;
+}
+
+.origin-filter input:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 3px;
+}
+
+.origins-count {
+    margin-top: var(--space-2);
+    color: var(--color-muted);
+}
+
+.origins-list a {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-2);
+}
+
+.origins-list a span:first-child {
+    overflow-wrap: anywhere;
+}
+
+.origin-artwork-count {
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+}

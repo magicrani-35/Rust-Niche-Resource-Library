@@ -1,6 +1,6 @@
 use gloo_net::http::Request;
 
-use crate::models::{ApiArtwork, Artwork, ArtworkDetailResponse, ArtworkPage, PaginatedArtworkResponse, GalleryPage};
+use crate::models::{ApiArtwork, Artwork, ArtworkDetailResponse, ArtworkPage, PaginatedArtworkResponse, GalleryPage, OriginBucket, OriginsResponse,};
 
 pub(crate) async fn fetch_artworks(
     query: &str,
@@ -86,9 +86,11 @@ pub(crate) async fn fetch_origin_artworks(
     page: u32,
 ) -> Result<ArtworkPage, String> {
     let fields = "id,title,artist_display,date_display,image_id,place_of_origin";
-    let encoded_origin = urlencoding::encode(origin);
+
+    let normalized_origin = origin.trim().to_lowercase();
+    let encoded_origin = urlencoding::encode(&normalized_origin);
     let url = format!(
-        "https://api.artic.edu/api/v1/artworks/search?page={page}&limit=12&fields={fields}&query%5Bmatch_phrase%5D%5Bplace_of_origin%5D={encoded_origin}"
+        "https://api.artic.edu/api/v1/artworks/search?page={page}&limit=12&fields={fields}&query%5Bterm%5D%5Bplace_of_origin.keyword%5D={encoded_origin}"
     );
 
     let response = Request::get(&url)
@@ -112,4 +114,54 @@ pub(crate) async fn fetch_origin_artworks(
         artworks: body.data,
         pagination: body.pagination,
     })
+}
+
+pub(crate) async fn fetch_origins() -> Result<Vec<OriginBucket>, String> {
+    let params = r#"{
+        "size": 0,
+        "aggregations": {
+            "origins": {
+                "terms": {
+                    "field": "place_of_origin.keyword",
+                    "size": 10000,
+                    "order": {
+                        "_key": "asc"
+                    }
+                }
+            }
+        }
+    }"#;
+
+    let encoded_params = urlencoding::encode(params);
+
+    let url = format!(
+        "https://api.artic.edu/api/v1/artworks/search?params={encoded_params}"
+    );
+
+    let response = Request::get(&url)
+        .send()
+        .await
+        .map_err(|error| error.to_string())?;
+
+    if !response.ok() {
+        return Err(format!(
+            "The museum returned HTTP {}.",
+            response.status()
+        ));
+    }
+
+    let body = response
+        .json::<OriginsResponse>()
+        .await
+        .map_err(|error| error.to_string())?;
+
+    let origins = body.aggregations.origins;
+
+    if origins.sum_other_doc_count > 0 {
+        return Err(String::from(
+            "The museum returned an incomplete origin list."
+        ));
+    }
+
+    Ok(origins.buckets)
 }

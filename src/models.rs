@@ -55,3 +55,25 @@ pub(crate) struct GalleryPage {
     pub(crate) artworks: Vec<Artwork>,
     pub(crate) pagination: Pagination,
 }
+
+#[derive(Deserialize, Clone, PartialEq)]
+pub(crate) struct OriginBucket {
+    pub(crate) key: String,
+    pub(crate) doc_count: u32,
+}
+
+#[derive(Deserialize)]
+pub(crate) struct OriginAggregation {
+    pub(crate) buckets: Vec<OriginBucket>,
+    pub(crate) sum_other_doc_count: u32,
+}
+
+#[derive(Deserialize)]
+pub(crate) struct OriginAggregations {
+    pub(crate) origins: OriginAggregation,
+}
+
+#[derive(Deserialize)]
+pub(crate) struct OriginsResponse {
+    pub(crate) aggregations: OriginAggregations,
+}

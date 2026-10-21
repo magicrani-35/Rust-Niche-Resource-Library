@@ -3,9 +3,9 @@ use yew_router::prelude::Link;
 use web_sys::{HtmlDialogElement, HtmlInputElement};
 use wasm_bindgen_futures::spawn_local;
 
-use crate::api::fetch_artworks;
+use crate::api::{fetch_artworks, fetch_origins};
 use crate::components::{ArtworkCard, PaginationControls};
-use crate::models::GalleryPage;
+use crate::models::{GalleryPage, OriginBucket};
 use crate::routes::Route;
 
 #[component]
@@ -16,6 +16,11 @@ pub(crate) fn Gallery() -> Html {
     let submitted_search = use_state(String::new);
 
     let page = use_state(|| 1_u32);
+
+    let origins = use_state(|| None::
+    <Result<Vec<OriginBucket>, String>>);
+
+    let origin_filter = use_state(String::new);
 
     let on_search_input = {
         let search_text = search_text.clone();
@@ -52,6 +57,85 @@ pub(crate) fn Gallery() -> Html {
         })
     };
 
+    let origins_content = match &*origins {
+        None => html! {
+            <p role="status">{ "Loading origins..." }</p>
+        },
+        Some(Err(error)) => html! {
+            <p role="alert">
+                { format!("Could not load origins: {error}") }
+            </p>
+        },
+        Some(Ok(items)) => {
+            let filter = origin_filter.trim().to_lowercase();
+
+            let matching: Vec<_> = items
+                .iter()
+                .filter(|item| item.key.to_lowercase().contains(&filter))
+                .collect();
+
+            html! {
+                <>
+                    <p class="origins-count" role="status">
+                        {
+                            format!(
+                                "Showing {} of {} origins",
+                                matching.len(),
+                                items.len()
+                            )
+                        }
+                    </p>
+
+                    if matching.is_empty() {
+                        <p>{ "No origins match your filter." }</p>
+                    } else {
+                        <ul class="origins-list">
+                            {
+                                for matching.into_iter().map(|item| {
+                                    let origins_dialog = origins_dialog.clone();
+                                    let close_dialog = Callback::from(move |_| {
+                                        if let Some(dialog) = origins_dialog.cast::<HtmlDialogElement>()
+                                        {
+                                            dialog.close();
+                                        }
+                                    });
+
+                                    let key = item.key.clone();
+                                    let destination = Route::Origin {
+                                        origin: item.key.clone(),
+                                    };
+
+                                    html! {
+                                        <li
+                                            key={key}
+                                            onclick={close_dialog}
+                                        >
+                                            <Link<Route>
+                                                to={destination}
+                                            >
+                                                <span>{ &item.key }</span>
+                                                <span class="origin-artwork-count">{ item.doc_count }</span>
+                                            </Link<Route>>
+                                        </li>
+                                    }
+                                })
+                            }
+                        </ul>
+                    }
+                </>
+            }
+        },
+    };
+
+    let on_origin_filter = {
+        let origin_filter = origin_filter.clone();
+
+        Callback::from(move |event: InputEvent| {
+            let input: HtmlInputElement = event.target_unchecked_into();
+            origin_filter.set(input.value());
+        })
+    };
+
     {
         let artworks = artworks.clone();
 
@@ -71,6 +155,19 @@ pub(crate) fn Gallery() -> Html {
                 || ()
             }
         );
+    }
+
+    {
+        let origins = origins.clone();
+
+        use_effect_with((), move |_| {
+            spawn_local(async move {
+                let result = fetch_origins().await;
+                origins.set(Some(result));
+            });
+
+            || ()
+        });
     }
 
     html! {
@@ -142,32 +239,18 @@ pub(crate) fn Gallery() -> Html {
                     { "Choose an origin to explore its artwork." }
                 </p>
 
-                <ul class="origins-list">
-                    {
-                        for ["Japan", "France", "India"].into_iter().map(|origin| {
-                        let origins_dialog = origins_dialog.clone();
+                <div class="origin-filter">
+                    <label for="origin-filter">{ "Find an origin" }</label>
+                    <input
+                        id="origin-filter"
+                        type="search"
+                        placeholder="Try Japan, Paris, or a region"
+                        value={(*origin_filter).clone()}
+                        oninput={on_origin_filter}
+                    />
+                </div>
 
-                        let close_dialog = Callback::from(move |_| {
-                            if let Some(dialog) = origins_dialog.cast::
-                            <HtmlDialogElement>() {
-                                dialog.close();
-                            }
-                        });
-
-                        html! {
-                            <li key={origin} onclick={close_dialog}>
-                                <Link<Route>
-                                    to={Route::Origin {
-                                        origin:origin.to_owned(),
-                                    }}
-                                >
-                                    { origin }
-                                </Link<Route>>
-                            </li>
-                            }
-                        })
-                    }
-                </ul>
+                { origins_content }
             </dialog>
 
             <form class="search-form" onsubmit={on_search_submit}>
